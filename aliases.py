@@ -1,7 +1,12 @@
-import subprocess
 import os
 from rich.console import Console
 from rich.table import Table
+
+SHELL_DIR = '/Users/$USER/scripts/sh'
+PY_VIRT_DIR = f"source /Users/{os.environ['USER']}/py_venv/dev/bin/activate"
+PY_SCRIPT_DIR = f"/Users/{os.environ['USER']}/scripts/python"
+PY_VER = 'python3'
+EXIT = 'deactivate'
 
 menu_options = {
     '1': 'Start All Torrents',
@@ -9,7 +14,7 @@ menu_options = {
     '3': 'Status of All Torrents',
     '4': 'Clean Torrent Directories',
     '5': 'Locate Duplicate Movies',
-    '6': 'Reload ZSH',
+    '6': 'Reload Zsh',
     '7': 'Show All DNS Records',
     '8': 'Restart VM',
     '9': 'Backup VM',
@@ -19,7 +24,7 @@ menu_options = {
     '13': 'Update All RPis',
     '14': 'Recent PiHole Blocks',
     '15': 'Tail Ansible',
-    '16': 'Tail Jellyfin',
+    '16': 'Jellyfin Event Log',
     '17': 'Tail Untangle',
     '18': 'Wireless Status',
     '19': 'Switch Status',
@@ -32,131 +37,109 @@ table.add_column("Alias", justify="center", style="cyan")
 table.add_column("Description", justify="left", style="green")
 print('\n')
 
-
 def print_menu():
     for key in menu_options.keys():
         table.add_row(key, menu_options[key])
 
-
 def option1():
     print('\n')
-    os.system('/Users/$USER/scripts/sh/start_all_torrents.sh')
+    os.system(f"{SHELL_DIR}/start_all_torrents.sh")
     print('\n')
-
 
 def option2():
     print('\n')
-    os.system('/Users/$USER/scripts/sh/status_of_incomplete_torrents.sh')
+    os.system(f"{SHELL_DIR}/status_of_incomplete_torrents.sh")
     print('\n')
-
 
 def option3():
     print('\n')
-    os.system('/Users/$USER/scripts/sh/status_of_all_torrents.sh')
+    os.system(f"{PY_VIRT_DIR} && {PY_VER} {PY_SCRIPT_DIR}/transmission_status.py && {EXIT}")
     print('\n')
-
 
 def option4():
     print('\n')
-    os.system('/Users/$USER/scripts/sh/clean_torrent_directories.sh')
+    os.system(f"{SHELL_DIR}/clean_torrent_directories.sh")
     print('\n')
-
 
 def option5():
     print('\n')
-    os.system('/Users/$USER/scripts/sh/locate_duplicate_movies.sh')
+    os.system(f"{SHELL_DIR}/locate_duplicate_movies.sh")
     print('\n')
-
 
 def option6():
     print('\n')
-    os.system('/Users/$USER/scripts/sh/reload_zsh.sh')
+    os.system(f"{SHELL_DIR}/reload_zsh.sh")
     print('\n')
-
 
 def option7():
     print('\n')
-    os.system('/Users/$USER/scripts/sh/show_all_dns_records.sh')
+    os.system(f"{SHELL_DIR}/show_all_dns_records.sh")
     print('\n')
-
 
 def option8():
     print('\n')
-    os.system('/Users/$USER/scripts/sh/restart_vm.sh')
+    os.system(f"{SHELL_DIR}/restart_vm.sh")
     print('\n')
-
 
 def option9():
     print('\n')
-    os.system('/Users/$USER/scripts/sh/backup_vm.sh')
+    os.system(f"{SHELL_DIR}/backup_vm.sh")
     print('\n')
-
 
 def option10():
     print('\n')
-    os.system('/Users/$USER/scripts/sh/start_vm.sh')
+    os.system(f"{SHELL_DIR}/start_vm.sh")
     print('\n')
-
 
 def option11():
     print('\n')
-    os.system('/Users/$USER/scripts/sh/backup_prom_config.sh')
+    os.system(f"{SHELL_DIR}/backup_prom_config.sh")
     print('\n')
-
 
 def option12():
     print('\n')
-    subprocess.run(['python', f"/Users/{os.environ['USER']}/scripts/python/recent_tracks.py"])
+    os.system(f"{PY_VIRT_DIR} && {PY_VER} {PY_SCRIPT_DIR}/recent_tracks.py && {EXIT}")
     print('\n')
-
 
 def option13():
     print('\n')
-    os.system('/Users/$USER/scripts/sh/update_all_rpis.sh')
+    os.system(f"{SHELL_DIR}/update_all_rpis.sh")
     print('\n')
-
 
 def option14():
     print('\n')
-    os.system('/Users/$USER/scripts/sh/pihole_blocks.sh')
+    os.system(f"{SHELL_DIR}/pihole_blocks.sh")
     print('\n')
-
 
 def option15():
     print('\n')
-    os.system('/Users/$USER/scripts/sh/tail_ansible.sh')
+    os.system(f"{SHELL_DIR}/tail_ansible.sh")
     print('\n')
-
 
 def option16():
     print('\n')
-    os.system('/Users/$USER/scripts/sh/jellyfin.sh')
+    os.system(f"{PY_VIRT_DIR} && {PY_VER} {PY_SCRIPT_DIR}/jellyfin_activity.py && {EXIT}")
     print('\n')
-
 
 def option17():
     print('\n')
-    os.system('/Users/$USER/scripts/sh/untangle_query.sh')
+    os.system(f"{SHELL_DIR}/untangle_query.sh")
     print('\n')
-
 
 def option18():
     print('\n')
-    subprocess.run(['python', f"/Users/{os.environ['USER']}/scripts/python/wireless.py"])
+    os.system(f"{PY_VIRT_DIR} && {PY_VER} {PY_SCRIPT_DIR}/wireless.py && {EXIT}")
     print('\n')
-
 
 def option19():
     print('\n')
-    subprocess.run(['python', f"/Users/{os.environ['USER']}/scripts/python/switches.py"])
+    os.system(f"{PY_VIRT_DIR} && {PY_VER} {PY_SCRIPT_DIR}/switches.py && {EXIT}")
     print('\n')
-
 
 def option20():
     print('\n')
-    os.system('/Users/$USER/scripts/sh/nas.sh')
+    os.system(f"{SHELL_DIR}/nas.sh")
     print('\n')
-
 
 if __name__ == '__main__':
     print_menu()
