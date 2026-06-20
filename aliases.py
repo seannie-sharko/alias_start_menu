@@ -1,145 +1,92 @@
+import json
 import os
+import re
+import subprocess
 from rich.console import Console
 from rich.table import Table
 
-SHELL_DIR = '/Users/$USER/scripts/sh'
-PY_VIRT_DIR = f"source /Users/{os.environ['USER']}/py_venv/dev/bin/activate"
-PY_SCRIPT_DIR = f"/Users/{os.environ['USER']}/scripts/python"
-PY_VER = 'python3'
-EXIT = 'deactivate'
-
-menu_options = {
-    '1': 'Start All Torrents',
-    '2': 'Status of Incomplete Torrents',
-    '3': 'Status of All Torrents',
-    '4': 'Clean Torrent Directories',
-    '5': 'Locate Duplicate Movies',
-    '6': 'Reload Zsh',
-    '7': 'Show All DNS Records',
-    '8': 'Restart VM',
-    '9': 'Backup VM',
-    '10': 'Start VM',
-    '11': 'Backup Prom Config',
-    '12': 'Show Recent Spotify Tracks',
-    '13': 'Update All RPis',
-    '14': 'Recent PiHole Blocks',
-    '15': 'Tail Ansible',
-    '16': 'Jellyfin Event Log',
-    '17': 'Tail Untangle',
-    '18': 'Wireless Status',
-    '19': 'Switch Status',
-    '20': 'Mount NAS Drives',
-    '21': 'Exit',
-}
+ALIAS_MENU_OPTIONS_ENV = 'ALIAS_MENU_OPTIONS'
+OPTION_LABELS_ENV = 'OPTION_LABELS'
+OPTION_COMMANDS_ENV = 'OPTION_COMMANDS'
 
 table = Table(title="Alias Launch Menu")
 table.add_column("Alias", justify="center", style="cyan")
 table.add_column("Description", justify="left", style="green")
 print('\n')
 
+
+def parse_env_list(env_var_name, default_values):
+    raw_value = os.getenv(env_var_name, "")
+    if not raw_value.strip():
+        return default_values
+    return [
+        item.strip()
+        for item in re.split(r"[\n,]+", raw_value)
+        if item.strip()
+    ]
+
+
+def parse_json_string_map(env_var_name):
+    raw_value = os.getenv(env_var_name, "")
+    if not raw_value.strip():
+        raise ValueError(f"{env_var_name} must be set to a JSON object")
+
+    try:
+        value_map = json.loads(raw_value)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"{env_var_name} must be valid JSON") from exc
+
+    if not isinstance(value_map, dict):
+        raise ValueError(f"{env_var_name} must be a JSON object")
+
+    invalid_entries = [
+        key for key, value in value_map.items()
+        if not isinstance(key, str) or not isinstance(value, str)
+    ]
+    if invalid_entries:
+        raise ValueError(
+            f"{env_var_name} keys and values must be strings: {', '.join(invalid_entries)}"
+        )
+
+    return value_map
+
+
+def build_menu():
+    configured_keys = parse_env_list(ALIAS_MENU_OPTIONS_ENV, DEFAULT_MENU_OPTION_KEYS)
+    invalid_keys = [key for key in configured_keys if key not in OPTION_COMMANDS]
+    if invalid_keys:
+        raise ValueError(
+            f"Invalid values in {ALIAS_MENU_OPTIONS_ENV}: {', '.join(invalid_keys)}"
+        )
+    missing_labels = [key for key in configured_keys if key not in OPTION_LABELS]
+    if missing_labels:
+        raise ValueError(
+            f"Missing labels in {OPTION_LABELS_ENV}: {', '.join(missing_labels)}"
+        )
+
+    option_keys = configured_keys + ['exit']
+    option_labels = {**OPTION_LABELS, 'exit': 'Exit'}
+    menu = {str(index): option_labels[key] for index, key in enumerate(option_keys, start=1)}
+    selection_map = {str(index): key for index, key in enumerate(option_keys, start=1)}
+    return menu, selection_map
+
+
 def print_menu():
     for key in menu_options.keys():
         table.add_row(key, menu_options[key])
 
-def option1():
+
+def run_option(command):
     print('\n')
-    os.system(f"{SHELL_DIR}/start_all_torrents.sh")
+    subprocess.run(command, shell=True, check=False)
     print('\n')
 
-def option2():
-    print('\n')
-    os.system(f"{SHELL_DIR}/status_of_incomplete_torrents.sh")
-    print('\n')
 
-def option3():
-    print('\n')
-    os.system(f"{PY_VIRT_DIR} && {PY_VER} {PY_SCRIPT_DIR}/transmission_status.py && {EXIT}")
-    print('\n')
+OPTION_LABELS = parse_json_string_map(OPTION_LABELS_ENV)
+OPTION_COMMANDS = parse_json_string_map(OPTION_COMMANDS_ENV)
+DEFAULT_MENU_OPTION_KEYS = list(OPTION_COMMANDS.keys())
+menu_options, menu_selection_map = build_menu()
 
-def option4():
-    print('\n')
-    os.system(f"{SHELL_DIR}/clean_torrent_directories.sh")
-    print('\n')
-
-def option5():
-    print('\n')
-    os.system(f"{SHELL_DIR}/locate_duplicate_movies.sh")
-    print('\n')
-
-def option6():
-    print('\n')
-    os.system(f"{SHELL_DIR}/reload_zsh.sh")
-    print('\n')
-
-def option7():
-    print('\n')
-    os.system(f"{SHELL_DIR}/show_all_dns_records.sh")
-    print('\n')
-
-def option8():
-    print('\n')
-    os.system(f"{SHELL_DIR}/restart_vm.sh")
-    print('\n')
-
-def option9():
-    print('\n')
-    os.system(f"{SHELL_DIR}/backup_vm.sh")
-    print('\n')
-
-def option10():
-    print('\n')
-    os.system(f"{SHELL_DIR}/start_vm.sh")
-    print('\n')
-
-def option11():
-    print('\n')
-    os.system(f"{SHELL_DIR}/backup_prom_config.sh")
-    print('\n')
-
-def option12():
-    print('\n')
-    os.system(f"{PY_VIRT_DIR} && {PY_VER} {PY_SCRIPT_DIR}/recent_tracks.py && {EXIT}")
-    print('\n')
-
-def option13():
-    print('\n')
-    os.system(f"{SHELL_DIR}/update_all_rpis.sh")
-    print('\n')
-
-def option14():
-    print('\n')
-    os.system(f"{SHELL_DIR}/pihole_blocks.sh")
-    print('\n')
-
-def option15():
-    print('\n')
-    os.system(f"{SHELL_DIR}/tail_ansible.sh")
-    print('\n')
-
-def option16():
-    print('\n')
-    os.system(f"{PY_VIRT_DIR} && {PY_VER} {PY_SCRIPT_DIR}/jellyfin_activity.py && {EXIT}")
-    print('\n')
-
-def option17():
-    print('\n')
-    os.system(f"{SHELL_DIR}/untangle_query.sh")
-    print('\n')
-
-def option18():
-    print('\n')
-    os.system(f"{PY_VIRT_DIR} && {PY_VER} {PY_SCRIPT_DIR}/wireless.py && {EXIT}")
-    print('\n')
-
-def option19():
-    print('\n')
-    os.system(f"{PY_VIRT_DIR} && {PY_VER} {PY_SCRIPT_DIR}/switches.py && {EXIT}")
-    print('\n')
-
-def option20():
-    print('\n')
-    os.system(f"{SHELL_DIR}/nas.sh")
-    print('\n')
 
 if __name__ == '__main__':
     print_menu()
@@ -150,48 +97,11 @@ if __name__ == '__main__':
         option = str(input('Select an alias ' + '[1 - ' + str(len(menu_options)) + ']: '))
     except:
         print('Wrong input. Please enter a number ...')
-    if option == '1':
-        option1()
-    elif option == '2':
-        option2()
-    elif option == '3':
-        option3()
-    elif option == '4':
-        option4()
-    elif option == '5':
-        option5()
-    elif option == '6':
-        option6()
-    elif option == '7':
-        option7()
-    elif option == '8':
-        option8()
-    elif option == '9':
-        option9()
-    elif option == '10':
-        option10()
-    elif option == '11':
-        option11()
-    elif option == '12':
-        option12()
-    elif option == '13':
-        option13()
-    elif option == '14':
-        option14()
-    elif option == '15':
-        option15()
-    elif option == '16':
-        option16()
-    elif option == '17':
-        option17()
-    elif option == '18':
-        option18()
-    elif option == '19':
-        option19()
-    elif option == '20':
-        option20()
-    elif option == '21':
+    selected_option = menu_selection_map.get(option)
+    if selected_option == 'exit':
         print('Bye!')
         exit()
+    elif selected_option in OPTION_COMMANDS:
+        run_option(OPTION_COMMANDS[selected_option])
     else:
         print('Invalid option!')
